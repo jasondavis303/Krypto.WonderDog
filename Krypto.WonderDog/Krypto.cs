@@ -217,7 +217,9 @@ namespace System.Security.Cryptography
             using var decryptor = aes.CreateDecryptor();
             using var msEncrypted = new MemoryStream(data);
             using var cs = new CryptoStream(msEncrypted, decryptor, CryptoStreamMode.Read);
-            return ReadBytes(cs, data.Length);
+            using var msDecrypted = new MemoryStream();
+            cs.CopyTo(msDecrypted);
+            return msDecrypted.ToArray();
         }
 
         /// <summary>
@@ -237,7 +239,9 @@ namespace System.Security.Cryptography
             if (Encoding.UTF8.GetString(magicBytes) != magicString)
                 throw new Exception(MAGIC_STRING_EXCEPTION);
 
-            return ReadBytes(cs, data.Length - magicBytes.Length);
+            using var msDecrypted = new MemoryStream();
+            cs.CopyTo(msDecrypted);
+            return msDecrypted.ToArray();
         }
 
 
