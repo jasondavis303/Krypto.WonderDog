@@ -62,6 +62,24 @@ namespace System.Security.Cryptography
             return ret;
         }
 
+        private async Task<FileStream> OpenAsyncReadAsync(string filename, CancellationToken cancellationToken)
+        {
+            FileStream fileStream = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Write | FileShare.Delete, BUFFER_SIZE, true);
+            try
+            {
+                byte[] buffer = new byte[1];
+                int result = await fileStream.ReadAsync(buffer, 0, 1, cancellationToken).ConfigureAwait(false);
+                fileStream.Seek(0, SeekOrigin.Begin);
+                return fileStream;
+            }
+            catch
+            {
+                fileStream.Dispose();
+                return new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Write | FileShare.Delete, BUFFER_SIZE, false);
+            }
+        }
+
+        private FileStream CreateFile(string filename, bool async) => new FileStream(filename, FileMode.Create, FileAccess.Write, FileShare.None, BUFFER_SIZE, async);
 
 
 
@@ -137,10 +155,10 @@ namespace System.Security.Cryptography
 
         public async Task EncryptFileAsync(string srcFile, string dstFile, string password, CancellationToken cancellationToken = default)
         {
-            using var src = new FileStream(srcFile, FileMode.Open, FileAccess.Read, FileShare.Read, BUFFER_SIZE, true);
+            using var src = await OpenAsyncReadAsync(srcFile, cancellationToken).ConfigureAwait(false);
             using var aes = CreateAes(password);
             using var encryptor = aes.CreateEncryptor();
-            using var dst = new FileStream(dstFile, FileMode.Create, FileAccess.Write, FileShare.None, BUFFER_SIZE, true);
+            using var dst = CreateFile(dstFile, src.IsAsync);
             using var cs = new CryptoStream(dst, encryptor, CryptoStreamMode.Write);
             await src.CopyToAsync(cs, BUFFER_SIZE, cancellationToken).ConfigureAwait(false);
             cs.FlushFinalBlock();
@@ -148,10 +166,10 @@ namespace System.Security.Cryptography
 
         public async Task EncryptFileAsync(string srcFile, string dstFile, string password, string magicString, CancellationToken cancellationToken = default)
         {
-            using var src = new FileStream(srcFile, FileMode.Open, FileAccess.Read, FileShare.Read, BUFFER_SIZE, true);
+            using var src = await OpenAsyncReadAsync(srcFile, cancellationToken).ConfigureAwait(false);
             using var aes = CreateAes(password);
             using var encryptor = aes.CreateEncryptor();
-            using var dst = new FileStream(dstFile, FileMode.Create, FileAccess.Write, FileShare.None, BUFFER_SIZE, true);
+            using var dst = CreateFile(dstFile, src.IsAsync);
             using var cs = new CryptoStream(dst, encryptor, CryptoStreamMode.Write);
 
             var magicBytes = Encoding.UTF8.GetBytes(magicString);
@@ -255,17 +273,17 @@ namespace System.Security.Cryptography
 
         public async Task DecryptFileAsync(string srcFile, string dstFile, string password, CancellationToken cancellationToken = default)
         {
-            using var src = new FileStream(srcFile, FileMode.Open, FileAccess.Read, FileShare.Read, BUFFER_SIZE, true);
+            using var src = await OpenAsyncReadAsync(srcFile, cancellationToken).ConfigureAwait(false);
             using var aes = CreateAes(password);
             using var decryptor = aes.CreateDecryptor();
             using var cs = new CryptoStream(src, decryptor, CryptoStreamMode.Read);
-            using var dst = new FileStream(dstFile, FileMode.Create, FileAccess.Write, FileShare.None, BUFFER_SIZE, true);
+            using var dst = CreateFile(dstFile, src.IsAsync);
             await cs.CopyToAsync(dst, BUFFER_SIZE, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task DecryptFileAsync(string srcFile, string dstFile, string password, string magicString, CancellationToken cancellationToken = default)
         {
-            using var src = new FileStream(srcFile, FileMode.Open, FileAccess.Read, FileShare.Read, BUFFER_SIZE, true);
+            using var src = await OpenAsyncReadAsync(srcFile, cancellationToken).ConfigureAwait(false);
             using var aes = CreateAes(password);
             using var decryptor = aes.CreateDecryptor();
             using var cs = new CryptoStream(src, decryptor, CryptoStreamMode.Read);
@@ -274,7 +292,7 @@ namespace System.Security.Cryptography
             if (Encoding.UTF8.GetString(magicBytes) != magicString)
                 throw new Exception(MAGIC_STRING_EXCEPTION);
 
-            using var dst = new FileStream(dstFile, FileMode.Create, FileAccess.Write, FileShare.None, BUFFER_SIZE, true);
+            using var dst = CreateFile(dstFile, src.IsAsync);
             await cs.CopyToAsync(dst, BUFFER_SIZE, cancellationToken).ConfigureAwait(false);
         }
     }
