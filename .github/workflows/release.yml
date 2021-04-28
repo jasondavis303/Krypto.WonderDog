@@ -1,6 +1,6 @@
 name: release
 on:
-  run:
+  push:
     branches: [ master ]
 
 jobs:
