@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>8</LangVersion>
+    <RootNamespace>System.Security.Cryptography</RootNamespace>
+    <Version>1.0.0.1</Version>
+    <Authors>Jason Davis</Authors>
+    <Company>jasondavis303</Company>
+    <Description>Small .Net Standard 2.0 library that handles common boilerplate AES encryption</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>jasondavis303</Copyright>
+    <PackageProjectUrl>https://github.com/jasondavis303/Krypto.WinderDog</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/jasondavis303/Krypto.WinderDog.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
+  </ItemGroup>
+
+</Project>

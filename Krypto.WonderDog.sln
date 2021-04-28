@@ -1,0 +1,42 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31205.134
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Krypto.WonderDog", "Krypto.WonderDog\Krypto.WonderDog.csproj", "{EED1A08A-FD7B-42B4-A072-54649FD56A89}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2831090C-F3C8-43ED-A487-D06267ACA7F9}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{C2C0C434-8629-454C-9FF0-30653119C1A2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{795554E1-B735-4F97-B5CA-FAA363C7ECD8}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\release.yml = .github\workflows\release.yml
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EED1A08A-FD7B-42B4-A072-54649FD56A89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EED1A08A-FD7B-42B4-A072-54649FD56A89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EED1A08A-FD7B-42B4-A072-54649FD56A89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EED1A08A-FD7B-42B4-A072-54649FD56A89}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C2C0C434-8629-454C-9FF0-30653119C1A2} = {2831090C-F3C8-43ED-A487-D06267ACA7F9}
+		{795554E1-B735-4F97-B5CA-FAA363C7ECD8} = {C2C0C434-8629-454C-9FF0-30653119C1A2}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EB2BE221-D829-48DC-9116-8422163F1AE5}
+	EndGlobalSection
+EndGlobal
