@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace System.Security.Cryptography
@@ -7,7 +8,7 @@ namespace System.Security.Cryptography
     public class Krypto
     {
         const int BUFFER_SIZE = 81920;
-        
+        const string MAGIC_STRING_EXCEPTION = "Unable to decrypt the magic string";
 
 
         private Aes CreateAes(string password)
@@ -31,11 +32,39 @@ namespace System.Security.Cryptography
             return ret;
         }
 
+        private byte[] ReadBytes(Stream stream, int cnt)
+        {
+            var ret = new byte[cnt];
+            int totalRead = 0;
+            int read;
+            while ((read = stream.Read(ret, totalRead, ret.Length - totalRead)) > 0)
+            {
+                totalRead += read;
+                if (totalRead == ret.Length)
+                    break;
+            }
+
+            return ret;
+        }
+
+        private async Task<byte[]> ReadBytesAsync(Stream stream, int cnt, CancellationToken cancellationToken)
+        {
+            var ret = new byte[cnt];
+            int totalRead = 0;
+            int read;
+            while ((read = await stream.ReadAsync(ret, totalRead, ret.Length - totalRead, cancellationToken).ConfigureAwait(false)) > 0)
+            {
+                totalRead += read;
+                if (totalRead == ret.Length)
+                    break;
+            }
+
+            return ret;
+        }
 
 
 
 
-       
         /// <summary>
         /// Encrypt small strings
         /// </summary>
@@ -45,6 +74,17 @@ namespace System.Security.Cryptography
                 throw new ArgumentNullException(nameof(data));
 
             return Convert.ToBase64String(Encrypt(Encoding.UTF8.GetBytes(data), password), Base64FormattingOptions.None);
+        }
+
+        /// <summary>
+        /// Encrypt small strings
+        /// </summary>
+        public string Encrypt(string data, string password, string magicString)
+        {
+            if (string.IsNullOrWhiteSpace(data))
+                throw new ArgumentNullException(nameof(data));
+
+            return Convert.ToBase64String(Encrypt(Encoding.UTF8.GetBytes(data), password, magicString), Base64FormattingOptions.None);
         }
 
         /// <summary>
@@ -65,22 +105,59 @@ namespace System.Security.Cryptography
             return ms.ToArray();
         }
 
-        public async Task EncryptFileAsync(string filename, string password)
+        /// <summary>
+        /// Encrypt small chunks of data
+        /// </summary>
+        public byte[] Encrypt(byte[] data, string password, string magicString)
+        {
+            if (data == null || data.Length == 0)
+                throw new ArgumentNullException(nameof(data));
+
+            using var aes = CreateAes(password);
+            using var encryptor = aes.CreateEncryptor();
+            using var ms = new MemoryStream();
+            using var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write);
+
+            var magicBytes = Encoding.UTF8.GetBytes(magicString);
+            cs.Write(magicBytes, 0, magicBytes.Length);
+
+            cs.Write(data, 0, data.Length);
+            cs.FlushFinalBlock();
+
+            return ms.ToArray();
+        }
+
+        public async Task EncryptFileAsync(string filename, string password, CancellationToken cancellationToken = default)
         {
             string tmpFile = filename + ".tmp";
-            await EncryptFileAsync(filename, tmpFile, password).ConfigureAwait(false);
+            await EncryptFileAsync(filename, tmpFile, password, cancellationToken).ConfigureAwait(false);
             File.Delete(filename);
             File.Move(tmpFile, filename);
         }
 
-        public async Task EncryptFileAsync(string srcFile, string dstFile, string password)
+        public async Task EncryptFileAsync(string srcFile, string dstFile, string password, CancellationToken cancellationToken = default)
         {
             using var src = new FileStream(srcFile, FileMode.Open, FileAccess.Read, FileShare.Read, BUFFER_SIZE, true);
             using var aes = CreateAes(password);
             using var encryptor = aes.CreateEncryptor();
             using var dst = new FileStream(dstFile, FileMode.Create, FileAccess.Write, FileShare.None, BUFFER_SIZE, true);
             using var cs = new CryptoStream(dst, encryptor, CryptoStreamMode.Write);
-            await src.CopyToAsync(cs, BUFFER_SIZE).ConfigureAwait(false);
+            await src.CopyToAsync(cs, BUFFER_SIZE, cancellationToken).ConfigureAwait(false);
+            cs.FlushFinalBlock();
+        }
+
+        public async Task EncryptFileAsync(string srcFile, string dstFile, string password, string magicString, CancellationToken cancellationToken = default)
+        {
+            using var src = new FileStream(srcFile, FileMode.Open, FileAccess.Read, FileShare.Read, BUFFER_SIZE, true);
+            using var aes = CreateAes(password);
+            using var encryptor = aes.CreateEncryptor();
+            using var dst = new FileStream(dstFile, FileMode.Create, FileAccess.Write, FileShare.None, BUFFER_SIZE, true);
+            using var cs = new CryptoStream(dst, encryptor, CryptoStreamMode.Write);
+
+            var magicBytes = Encoding.UTF8.GetBytes(magicString);
+            await cs.WriteAsync(magicBytes, 0, magicBytes.Length, cancellationToken).ConfigureAwait(false);
+
+            await src.CopyToAsync(cs, BUFFER_SIZE, cancellationToken).ConfigureAwait(false);
             cs.FlushFinalBlock();
         }
 
@@ -106,6 +183,27 @@ namespace System.Security.Cryptography
             return sr.ReadToEnd();
         }
 
+        /// <summary>
+        /// Decrypt small strings
+        /// </summary>
+        public string Decrypt(string data, string password, string magicString)
+        {
+            if (string.IsNullOrWhiteSpace(data))
+                throw new ArgumentNullException(nameof(data));
+
+            using var aes = CreateAes(password);
+            using var decryptor = aes.CreateDecryptor();
+            using var ms = new MemoryStream(Convert.FromBase64String(data));
+            using var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
+
+            var magicBytes = ReadBytes(cs, magicString.Length);
+            if (Encoding.UTF8.GetString(magicBytes) != magicString)
+                throw new Exception(MAGIC_STRING_EXCEPTION);
+
+            using var sr = new StreamReader(cs);
+            return sr.ReadToEnd();
+        }
+
 
         /// <summary>
         /// Decrypt small chunks of data
@@ -117,39 +215,63 @@ namespace System.Security.Cryptography
 
             using var aes = CreateAes(password);
             using var decryptor = aes.CreateDecryptor();
-            using var ms = new MemoryStream(data);
-            using var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
-            var ret = new byte[data.Length];
-            int totalRead = 0;
-            int read;
-            while ((read = cs.Read(ret, totalRead, ret.Length - totalRead)) > 0)
-            {
-                totalRead += read;
-                if (totalRead == ret.Length)
-                    break;
-            }
-
-            return ret;
+            using var msEncrypted = new MemoryStream(data);
+            using var cs = new CryptoStream(msEncrypted, decryptor, CryptoStreamMode.Read);
+            return ReadBytes(cs, data.Length);
         }
 
-        public async Task DecryptFileAsync(string filename, string password)
+        /// <summary>
+        /// Decrypt small chunks of data
+        /// </summary>
+        public byte[] Decrypt(byte[] data, string password, string magicString)
+        {
+            if (data == null || data.Length == 0)
+                throw new ArgumentNullException(nameof(data));
+
+            using var aes = CreateAes(password);
+            using var decryptor = aes.CreateDecryptor();
+            using var msEncrypted = new MemoryStream(data);
+            using var cs = new CryptoStream(msEncrypted, decryptor, CryptoStreamMode.Read);
+
+            var magicBytes = ReadBytes(cs, magicString.Length);
+            if (Encoding.UTF8.GetString(magicBytes) != magicString)
+                throw new Exception(MAGIC_STRING_EXCEPTION);
+
+            return ReadBytes(cs, data.Length - magicBytes.Length);
+        }
+
+
+        public async Task DecryptFileAsync(string filename, string password, CancellationToken cancellationToken = default)
         {
             string tmpFile = filename + ".tmp";
-            await DecryptFileAsync(filename, tmpFile, password).ConfigureAwait(false);
+            await DecryptFileAsync(filename, tmpFile, password, cancellationToken).ConfigureAwait(false);
             File.Delete(filename);
             File.Move(tmpFile, filename);
         }
 
-        public async Task DecryptFileAsync(string srcFile, string dstFile, string password)
+        public async Task DecryptFileAsync(string srcFile, string dstFile, string password, CancellationToken cancellationToken = default)
         {
             using var src = new FileStream(srcFile, FileMode.Open, FileAccess.Read, FileShare.Read, BUFFER_SIZE, true);
             using var aes = CreateAes(password);
             using var decryptor = aes.CreateDecryptor();
             using var cs = new CryptoStream(src, decryptor, CryptoStreamMode.Read);
             using var dst = new FileStream(dstFile, FileMode.Create, FileAccess.Write, FileShare.None, BUFFER_SIZE, true);
-            await cs.CopyToAsync(dst, BUFFER_SIZE).ConfigureAwait(false);
+            await cs.CopyToAsync(dst, BUFFER_SIZE, cancellationToken).ConfigureAwait(false);
         }
 
+        public async Task DecryptFileAsync(string srcFile, string dstFile, string password, string magicString, CancellationToken cancellationToken = default)
+        {
+            using var src = new FileStream(srcFile, FileMode.Open, FileAccess.Read, FileShare.Read, BUFFER_SIZE, true);
+            using var aes = CreateAes(password);
+            using var decryptor = aes.CreateDecryptor();
+            using var cs = new CryptoStream(src, decryptor, CryptoStreamMode.Read);
 
+            var magicBytes = await ReadBytesAsync(cs, magicString.Length, cancellationToken).ConfigureAwait(false);
+            if (Encoding.UTF8.GetString(magicBytes) != magicString)
+                throw new Exception(MAGIC_STRING_EXCEPTION);
+
+            using var dst = new FileStream(dstFile, FileMode.Create, FileAccess.Write, FileShare.None, BUFFER_SIZE, true);
+            await cs.CopyToAsync(dst, BUFFER_SIZE, cancellationToken).ConfigureAwait(false);
+        }
     }
 }
