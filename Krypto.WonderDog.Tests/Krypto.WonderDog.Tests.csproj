@@ -5,7 +5,7 @@
 
     <IsPackable>false</IsPackable>
 
-    <RootNamespace>System.Security.Cryptography</RootNamespace>
+    <RootNamespace>Krypto.WonderDog.Tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,11 +1,13 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace System.Security.Cryptography
+namespace Krypto.WonderDog
 {
-    public class Krypto
+    public class AES
     {
         const int BUFFER_SIZE = 81920;
         const string MAGIC_STRING_EXCEPTION = "Unable to decrypt the magic string";
