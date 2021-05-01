@@ -7,7 +7,7 @@
     <Version>1.0.0.1</Version>
     <Authors>Jason Davis</Authors>
     <Company>jasondavis303</Company>
-    <Description>Small .Net Standard 2.0 library that handles common boilerplate encryption as 1 line of code</Description>
+    <Description>Small library that handles common boilerplate encryption as 1 line of code</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Copyright>jasondavis303</Copyright>
     <PackageProjectUrl>https://github.com/jasondavis303/Krypto.WinderDog</PackageProjectUrl>
