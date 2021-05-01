@@ -1,4 +1,4 @@
-﻿using System;
+﻿    using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -141,8 +141,11 @@ namespace Krypto.WonderDog.Symmetric
             long totalRead = 0;
 
             using var alg = CreateAlg(key);
+#if NET472
             await destinationStream.WriteAsync(alg.IV, 0, alg.IV.Length, cancellationToken).ConfigureAwait(false);
-
+#else
+            await destinationStream.WriteAsync(alg.IV.AsMemory(0, alg.IV.Length), cancellationToken).ConfigureAwait(false);
+#endif
             if (progress != null)
             {
                 sourceLength += alg.IV.Length;
@@ -163,10 +166,18 @@ namespace Krypto.WonderDog.Symmetric
                 int bytesRead;
                 do
                 {
+#if NET472
                     bytesRead = await sourceStream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false);
+#else
+                    bytesRead = await sourceStream.ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken).ConfigureAwait(false);
+#endif
                     if (bytesRead > 0)
                     {
-                        await cs.WriteAsync(buffer, 0, bytesRead);
+#if NET472
+                        await cs.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
+#else
+                        await cs.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
+#endif
                         totalRead += bytesRead;
                         progress?.Report(new KryptoProgress(started, totalRead, sourceLength));
                     }
@@ -205,10 +216,18 @@ namespace Krypto.WonderDog.Symmetric
                 int bytesRead;
                 do
                 {
+#if NET472
                     bytesRead = await cs.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false);
+#else
+                    bytesRead = await cs.ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken).ConfigureAwait(false);
+#endif
                     if (bytesRead > 0)
                     {
-                        await destinationStream.WriteAsync(buffer, 0, bytesRead);
+#if NET472
+                        await destinationStream.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
+#else
+                        await destinationStream.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
+#endif
                         totalRead += bytesRead;
                         progress?.Report(new KryptoProgress(started, totalRead, sourceLength));
                     }
@@ -234,7 +253,7 @@ namespace Krypto.WonderDog.Symmetric
         }
 
 
-        private byte[] ReadBytes(Stream stream, int cnt)
+        private static byte[] ReadBytes(Stream stream, int cnt)
         {
             var ret = new byte[cnt];
             int totalRead = 0;
@@ -249,12 +268,16 @@ namespace Krypto.WonderDog.Symmetric
             return ret;
         }
 
-        private async Task<byte[]> ReadBytesAsync(Stream stream, int cnt, CancellationToken cancellationToken)
+        private static async Task<byte[]> ReadBytesAsync(Stream stream, int cnt, CancellationToken cancellationToken)
         {
             var ret = new byte[cnt];
             int totalRead = 0;
             int read;
+#if NET472
             while ((read = await stream.ReadAsync(ret, totalRead, ret.Length - totalRead, cancellationToken).ConfigureAwait(false)) > 0)
+#else
+            while ((read = await stream.ReadAsync(ret.AsMemory(totalRead, ret.Length - totalRead), cancellationToken).ConfigureAwait(false)) > 0)
+#endif
             {
                 totalRead += read;
                 if (totalRead == ret.Length)
