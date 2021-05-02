@@ -10,7 +10,7 @@ namespace Krypto.WonderDog
             BytesComplete = complete;
             TotalBytes = total;
 
-            Percent = TotalBytes > 0 ? BytesComplete / TotalBytes : 0;
+            Percent = TotalBytes > 0 ? BytesComplete / (double)TotalBytes : 0;
         
             if(BytesComplete > 0)
             {
