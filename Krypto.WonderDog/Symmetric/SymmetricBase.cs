@@ -199,7 +199,8 @@ namespace Krypto.WonderDog.Symmetric
 
             if (progress != null)
             {
-                totalRead += sourceLength;
+                sourceLength += alg.IV.Length;
+                totalRead += alg.IV.Length;
                 progress.Report(new KryptoProgress(started, totalRead, sourceLength));
             }
 
