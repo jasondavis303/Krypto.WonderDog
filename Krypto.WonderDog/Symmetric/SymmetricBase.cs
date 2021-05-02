@@ -186,7 +186,7 @@ namespace Krypto.WonderDog.Symmetric
 
             cs.FlushFinalBlock();
 
-            progress?.Report(new KryptoProgress(started, totalRead, sourceLength, true));
+            progress?.Report(new KryptoProgress(started, totalRead, totalRead, true));
         }
 
         public async Task DecryptStreamAsync(Key key, Stream sourceStream, long sourceLength, Stream destinationStream, IProgress<KryptoProgress> progress = null, CancellationToken cancellationToken = default)
@@ -235,7 +235,7 @@ namespace Krypto.WonderDog.Symmetric
                 } while (bytesRead > 0);
             }
 
-            progress?.Report(new KryptoProgress(started, totalRead, sourceLength, true));
+            progress?.Report(new KryptoProgress(started, totalRead, totalRead, true));
         }
 
 
