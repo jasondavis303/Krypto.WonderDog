@@ -51,7 +51,7 @@ namespace Krypto.WonderDog.HMAC
                 try { streamSize = stream.Length; }
                 catch { }
 
-            progress?.Report(new KryptoProgress(started, totalRead, streamSize));
+            progress?.Report(new KryptoProgress(started, totalRead, streamSize, false));
 
             using var alg = HashAlgorithm.Create(Algorithm);
             byte[] buffer = new byte[Utilities.BUFFER_SIZE];
@@ -62,11 +62,11 @@ namespace Krypto.WonderDog.HMAC
                 if (bytesRead > 0)
                     alg.TransformBlock(buffer, 0, bytesRead, null, 0);
                 totalRead += bytesRead;
-                progress?.Report(new KryptoProgress(started, totalRead, streamSize));
+                progress?.Report(new KryptoProgress(started, totalRead, streamSize, false));
             } while (bytesRead > 0);
             alg.TransformFinalBlock(buffer, 0, 0);
 
-            progress?.Report(new KryptoProgress(started, totalRead, streamSize));
+            progress?.Report(new KryptoProgress(started, totalRead, streamSize, true));
 
             return alg.Hash;
         }

@@ -4,11 +4,12 @@ namespace Krypto.WonderDog
 {
     public class KryptoProgress
     {
-        internal KryptoProgress(DateTime started, long complete, long total)
+        internal KryptoProgress(DateTime started, long complete, long total, bool done)
         {
             Started = started;
             BytesComplete = complete;
             TotalBytes = total;
+            Done = done;
 
             Percent = TotalBytes > 0 ? BytesComplete / (double)TotalBytes : 0;
         
@@ -49,5 +50,6 @@ namespace Krypto.WonderDog
         public double Percent { get; }
         public double BytesPerSecond { get; }
         public string Speed { get; }
+        public bool Done { get; set; }
     }
 }

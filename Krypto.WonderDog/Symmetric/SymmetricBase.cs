@@ -150,7 +150,7 @@ namespace Krypto.WonderDog.Symmetric
             {
                 sourceLength += alg.IV.Length;
                 totalRead += alg.IV.Length;
-                progress.Report(new KryptoProgress(started, totalRead, sourceLength));
+                progress.Report(new KryptoProgress(started, totalRead, sourceLength, false));
             }
 
             using var encryptor = alg.CreateEncryptor();
@@ -179,14 +179,14 @@ namespace Krypto.WonderDog.Symmetric
                         await cs.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
 #endif
                         totalRead += bytesRead;
-                        progress?.Report(new KryptoProgress(started, totalRead, sourceLength));
+                        progress?.Report(new KryptoProgress(started, totalRead, sourceLength, false));
                     }
                 } while (bytesRead > 0);
             }
 
             cs.FlushFinalBlock();
 
-            progress?.Report(new KryptoProgress(started, totalRead, sourceLength));
+            progress?.Report(new KryptoProgress(started, totalRead, sourceLength, true));
         }
 
         public async Task DecryptStreamAsync(Key key, Stream sourceStream, long sourceLength, Stream destinationStream, IProgress<KryptoProgress> progress = null, CancellationToken cancellationToken = default)
@@ -201,7 +201,7 @@ namespace Krypto.WonderDog.Symmetric
             {
                 sourceLength += alg.IV.Length;
                 totalRead += alg.IV.Length;
-                progress.Report(new KryptoProgress(started, totalRead, sourceLength));
+                progress.Report(new KryptoProgress(started, totalRead, sourceLength, false));
             }
 
             using var decryptor = alg.CreateDecryptor();
@@ -230,12 +230,12 @@ namespace Krypto.WonderDog.Symmetric
                         await destinationStream.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
 #endif
                         totalRead += bytesRead;
-                        progress?.Report(new KryptoProgress(started, totalRead, sourceLength));
+                        progress?.Report(new KryptoProgress(started, totalRead, sourceLength, false));
                     }
                 } while (bytesRead > 0);
             }
 
-            progress?.Report(new KryptoProgress(started, totalRead, sourceLength));
+            progress?.Report(new KryptoProgress(started, totalRead, sourceLength, true));
         }
 
 
