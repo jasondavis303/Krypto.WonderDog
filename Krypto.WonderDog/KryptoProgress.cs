@@ -7,6 +7,7 @@ namespace Krypto.WonderDog
         internal KryptoProgress(DateTime started, long complete, long total, bool done)
         {
             Started = started;
+            RunTime = DateTime.Now - Started;
             BytesComplete = complete;
             TotalBytes = total;
             Done = done;
@@ -17,7 +18,7 @@ namespace Krypto.WonderDog
             {
                 try
                 {
-                    double secs = (DateTime.Now - Started).TotalSeconds;
+                    double secs = RunTime.TotalSeconds;
                     if (secs > 0)
                         BytesPerSecond = BytesComplete / secs;
                 }
@@ -45,6 +46,7 @@ namespace Krypto.WonderDog
         }
 
         public DateTime Started { get; }
+        public TimeSpan RunTime { get; }
         public long BytesComplete { get; }
         public long TotalBytes { get; }
         public double Percent { get; }
