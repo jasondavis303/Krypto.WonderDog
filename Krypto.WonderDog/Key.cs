@@ -10,8 +10,7 @@ namespace Krypto.WonderDog
         private byte[] _salt = new byte[8];
         private byte[] _password;
         private int _iterations = 1000;
-        private HashAlgorithmName _hashAlgorithm = HashAlgorithmName.SHA512;
-
+        
         public Key() { }
 
         public Key(string password) => SetPassword(password);
@@ -108,16 +107,7 @@ namespace Krypto.WonderDog
             }
         }
 
-        public HashAlgorithmName Algorithm
-        {
-            get => _hashAlgorithm;
-            set
-            {
-                if (value == null)
-                    throw new Exception("Algorithm may not be null");
-                _hashAlgorithm = value;
-            }
-        }
+        public HashAlgorithmName Algorithm { get; set; } = HashAlgorithmName.SHA512;
 
         /// <summary>
         /// Sets the <see cref="Salt"/> to random, with a random length betweeen 256 and 2048 bits
