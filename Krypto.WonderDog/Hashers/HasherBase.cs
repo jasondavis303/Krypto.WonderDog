@@ -29,10 +29,11 @@ namespace Krypto.WonderDog.Hashers
             return HashStream(fs);
         }
 
-        public Task<byte[]> HashFileAsync(string filename, IProgress<KryptoProgress> progress = null, CancellationToken cancellationToken = default)
+        public async Task<byte[]> HashFileAsync(string filename, IProgress<KryptoProgress> progress = null, CancellationToken cancellationToken = default)
         {
             using var fs = Utilities.OpenFile(filename, true);
-            return HashStreamAsync(fs, -1, progress, cancellationToken);
+            var ret = await HashStreamAsync(fs, -1, progress, cancellationToken).ConfigureAwait(false);
+            return ret;
         }
 
         public byte[] HashStream(Stream stream)
