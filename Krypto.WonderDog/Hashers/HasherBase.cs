@@ -21,7 +21,7 @@ namespace Krypto.WonderDog.Hashers
             return alg.ComputeHash(data);
         }
 
-        public string Hash(string data) => BitConverter.ToString(Hash(Encoding.UTF8.GetBytes(data)));
+        public string Hash(string data) => BitConverter.ToString(Hash(Encoding.Unicode.GetBytes(data)));
 
         public byte[] HashFile(string filename)
         {
