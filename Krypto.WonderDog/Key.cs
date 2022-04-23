@@ -120,7 +120,7 @@ namespace Krypto.WonderDog
         /// </summary>
         public void GenerateRandomPassword() => Password = GenerateRandom();
 
-        private byte[] GenerateRandom()
+        private static byte[] GenerateRandom()
         {
             //Generate a random byte array of random length between 32 and 256 bytes
             var ret = new byte[new Random().Next(32, 257)];
