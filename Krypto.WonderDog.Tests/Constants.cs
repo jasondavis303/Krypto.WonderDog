@@ -7,6 +7,6 @@ namespace Krypto.WonderDog.Tests
         public const string TEST_STRING = "Krypto the Wonder Dog";
         public const string PASSWORD = "Cooler than Superman!";
 
-        public static byte[] TEST_DATA => Encoding.UTF8.GetBytes(TEST_STRING);
+        public static byte[] TEST_DATA => Encoding.Unicode.GetBytes(TEST_STRING);
     }
 }

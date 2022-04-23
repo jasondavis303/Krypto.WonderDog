@@ -45,9 +45,9 @@ namespace Krypto.WonderDog.Symmetric
 
 
 
-        public string Encrypt(Key key, string data) => Convert.ToBase64String(Encrypt(key, Encoding.UTF8.GetBytes(data)));
+        public string Encrypt(Key key, string data) => Convert.ToBase64String(Encrypt(key, Encoding.Unicode.GetBytes(data)));
 
-        public string Decrypt(Key key, string data) => Encoding.UTF8.GetString(Decrypt(key, Convert.FromBase64String(data)));
+        public string Decrypt(Key key, string data) => Encoding.Unicode.GetString(Decrypt(key, Convert.FromBase64String(data)));
 
 
 

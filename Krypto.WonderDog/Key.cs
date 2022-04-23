@@ -49,7 +49,7 @@ namespace Krypto.WonderDog
             if (password.Length < 8)
                 throw new ArgumentException("Password must be at least 8 characters long", nameof(password));
 
-            Password = Encoding.UTF8.GetBytes(password);
+            Password = Encoding.Unicode.GetBytes(password);
         }
 
         public void SetSalt(string salt)
@@ -60,12 +60,12 @@ namespace Krypto.WonderDog
             if (salt.Length < 8)
                 throw new ArgumentException("Salt must be at least 8 characters long", nameof(salt));
 
-            Salt = Encoding.UTF8.GetBytes(salt);
+            Salt = Encoding.Unicode.GetBytes(salt);
         }
 
-        public string GetPasswordString() => Encoding.UTF8.GetString(Password);
+        public string GetPasswordString() => Encoding.Unicode.GetString(Password);
 
-        public string GetSaltString() => Encoding.UTF8.GetString(Salt);
+        public string GetSaltString() => Encoding.Unicode.GetString(Salt);
 
         /// <summary>
         /// Default is 8 bytes, all zero. It is recommended to set and store the Salt value

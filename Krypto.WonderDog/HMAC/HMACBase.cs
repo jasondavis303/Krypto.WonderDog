@@ -21,7 +21,7 @@ namespace Krypto.WonderDog.HMAC
             return hmac.ComputeHash(data);
         }
 
-        public string Hash(Key key, string data) => BitConverter.ToString(Hash(key, Encoding.UTF8.GetBytes(data)));
+        public string Hash(Key key, string data) => BitConverter.ToString(Hash(key, Encoding.Unicode.GetBytes(data)));
         
         public byte[] HashFile(Key key, string filename)
         {
