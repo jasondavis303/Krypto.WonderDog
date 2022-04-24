@@ -124,7 +124,11 @@ namespace Krypto.WonderDog
         {
             //Generate a random byte array of random length between 32 and 256 bytes
             var ret = new byte[new Random().Next(32, 257)];
+#if NET6_0_OR_GREATER
+            using var rand = RandomNumberGenerator.Create();
+#else
             using var rand = new RNGCryptoServiceProvider();
+#endif
             rand.GetBytes(ret);
             return ret;
         }
